@@ -1263,7 +1263,17 @@ def rustc_compile_action(
     output_o = None
     if experimental_use_cc_common_link:
         obj_ext = ".o"
-        output_o = ctx.actions.declare_file(crate_info.name + obj_ext, sibling = crate_info.output)
+        output_name = crate_info.name
+        if crate_info.type == "cdylib" or crate_info.type == "proc-macro":
+            output_name = crate_info.output.basename
+            if toolchain.target_os != "windows":
+                # Strip the leading "lib" prefix
+                output_name = output_name[3:]
+
+            # Strip the file extension
+            output_name = output_name[:-(1 + len(crate_info.output.extension))]
+
+        output_o = ctx.actions.declare_file(output_name + obj_ext, sibling = crate_info.output)
         outputs = [output_o]
 
     # For a cdylib that might be added as a dependency to a cc_* target on Windows, it is important to include the
@@ -1383,14 +1393,13 @@ def rustc_compile_action(
 
         if not crate_info.output.path.startswith(package_dir):
             fail("The package dir path {} should be a prefix of the crate_info.output.path {}", package_dir, crate_info.output.path)
-
         output_relative_to_package = crate_info.output.path[len(package_dir):]
 
         # Compile actions that produce shared libraries create output of the form "libfoo.so" for linux and macos;
         # cc_common.link expects us to pass "foo" to the name parameter. We cannot simply use crate_info.name because
         # the name of the crate does not always match the name of output file, e.g a crate named foo-bar will produce
         # a (lib)foo_bar output file.
-        if crate_info.type == "cdylib":
+        if crate_info.type in ["cdylib", "proc-macro"]:
             output_lib = crate_info.output.basename
             if toolchain.target_os != "windows":
                 # Strip the leading "lib" prefix
