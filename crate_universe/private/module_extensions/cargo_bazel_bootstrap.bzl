@@ -56,6 +56,7 @@ def get_cargo_bazel_runner(module_ctx, cargo_bazel):
             "--rustc",
             rustc_path,
         ])
+        print("Running:", final_args)  # buildifier: disable=print
         result = module_ctx.execute(
             final_args,
             environment = dict(CARGO = cargo_path, RUSTC = rustc_path, **env),

@@ -69,8 +69,9 @@ def cargo_bootstrap(
     if build_mode not in _CARGO_BUILD_MODES:
         fail("'{}' is not a supported build mode. Use one of {}".format(build_mode, _CARGO_BUILD_MODES))
 
-    if build_mode == "release":
-        args.append("--release")
+    # if build_mode == "release":
+    args.append("--profile")
+    args.append("dev")
 
     env = dict({
         "RUSTC": str(rustc_bin),
@@ -101,7 +102,7 @@ def cargo_bootstrap(
         binary,
         extension,
     )
-
+    print("Produced binary at %s" % binary_path)
     if not repository_ctx.path(binary_path).exists:
         fail("Failed to produce binary at {}".format(binary_path))
 
