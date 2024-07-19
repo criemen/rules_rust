@@ -53,3 +53,6 @@ tracing-subscriber = "0.3.17"
 [dev-dependencies]
 maplit = "1.0.2"
 spectral = "0.6.0"
+
+[profile.release]
+debug = true

@@ -45,8 +45,10 @@ def get_cargo_bazel_runner(module_ctx, cargo_bazel):
     # Placing this as a nested function allows users to call this right at the
     # start of a module extension, thus triggering any restarts as early as
     # possible (since module_ctx.path triggers restarts).
-    def run(args, env = {}, timeout = 600):
-        final_args = [cargo_bazel]
+    def run(args, name, env = {}, timeout = 600):
+        workspace = module_ctx.getenv("GITHUB_WORKSPACE", "/Users/criemen")
+        profile_path = workspace + "/profile-" + name + ".json"
+        final_args = ["samply", "record", "--save-only", "-o", profile_path, "--", cargo_bazel]
         final_args.extend(args)
         final_args.extend([
             "--cargo",
@@ -59,9 +61,11 @@ def get_cargo_bazel_runner(module_ctx, cargo_bazel):
             environment = dict(CARGO = cargo_path, RUSTC = rustc_path, **env),
             timeout = timeout,
         )
+        if result.stdout:
+            print("Stdout:", result.stdout)  # buildifier: disable=print
+        if result.stderr:
+            print("Stderr:", result.stderr)  # buildifier: disable=print
         if result.return_code != 0:
-            if result.stdout:
-                print("Stdout:", result.stdout)  # buildifier: disable=print
             pretty_args = " ".join([str(arg) for arg in final_args])
             fail("%s returned with exit code %d:\n%s" % (pretty_args, result.return_code, result.stderr))
         return result

@@ -129,13 +129,14 @@ def _generate_hub_and_spokes(module_ctx, cargo_bazel, cfg, annotations, cargo_lo
             "--cargo-lockfile",
             cargo_lockfile,
         ])
-    cargo_bazel(splice_args)
+    module_ctx.report_progress("Splicing for %s" % cfg.name)
+    cargo_bazel(splice_args, cfg.name + "-splice")
 
     # Create a lockfile, since we need to parse it to generate spoke
     # repos.
     lockfile_path = tag_path.get_child("lockfile.json")
     module_ctx.file(lockfile_path, "")
-
+    module_ctx.report_progress("Generating for %s" % cfg.name)
     cargo_bazel([
         "generate",
         "--cargo-lockfile",
@@ -151,7 +152,7 @@ def _generate_hub_and_spokes(module_ctx, cargo_bazel, cfg, annotations, cargo_lo
         "--repin",
         "--lockfile",
         lockfile_path,
-    ])
+    ], cfg.name + "-generate")
 
     crates_dir = tag_path.get_child(cfg.name)
     _generate_repo(
