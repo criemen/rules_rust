@@ -98,7 +98,7 @@ def cargo_bootstrap(
         extension = ".exe"
 
     binary_path = "{}/{}{}".format(
-        build_mode,
+        "debug",
         binary,
         extension,
     )
